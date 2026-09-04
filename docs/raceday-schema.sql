@@ -31,3 +31,13 @@ CREATE TABLE Events (
     CONSTRAINT FK_Events_EventTypes FOREIGN KEY (EventTypeID) REFERENCES EventTypes(EventTypeID),
     CONSTRAINT FK_Events_Users FOREIGN KEY (OrganiserID) REFERENCES Users(UserID)
 );
+
+CREATE TABLE Categories (
+    CategoryID INT IDENTITY(1,1) PRIMARY KEY,
+    EventID INT NOT NULL,
+    CategoryName VARCHAR(50) NOT NULL,
+    MinimumAge INT NULL,
+    MaximumAge INT NULL,
+    CategoryDistance DECIMAL(6,2) NULL,
+    CONSTRAINT FK_Categories_Events FOREIGN KEY (EventID) REFERENCES Events(EventID)
+);
