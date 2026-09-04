@@ -23,7 +23,7 @@ jobs:
 
       - name: Check ERD file exists (PNG or PDF)
         run: |
-          if ! ls docs/*.png docs/*.pdf 1> /dev/null 2>&1; then
+          if ! find docs -maxdepth 1 \( -iname "*.png" -o -iname "*.pdf" \) | grep -q .; then
             echo "ERROR: No ERD file (.png or .pdf) found in /docs."
             exit 1
           fi
