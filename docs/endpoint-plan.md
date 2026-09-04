@@ -50,3 +50,13 @@
 | GET | /api/enrolments/my | Retrieves all enrolments belonging to the logged-in Participant. | Participant | None | 200 OK – list of the Participant's enrolments |
 | GET | /api/events/{eventId}/enrolments | Retrieves all enrolments for a specific event. Only the Organiser who owns the event may view them. | Organiser | None | 200 OK – list of enrolments for the event<br>403 Forbidden – not the owning Organiser<br>404 Not Found – event does not exist |
 | DELETE | /api/enrolments/{id} | Cancels the logged-in Participant's own enrolment. | Participant | None | 200 OK / 204 No Content – enrolment cancelled<br>403 Forbidden – not the owning Participant<br>404 Not Found – enrolment does not exist |
+
+
+## Results
+
+| HTTP Method | Route | Description | Role Required | Request Body | Expected Response |
+|---|---|---|---|---|---|
+| POST | /api/results | Captures a finish time and finishing position for a Participant's enrolment. Only the Organiser who owns the related event may capture results. | Organiser | { enrolmentId, finishTime, finishingPosition } | 201 Created – result recorded<br>403 Forbidden – not the owning Organiser<br>404 Not Found – enrolment does not exist<br>409 Conflict – result already recorded for this enrolment |
+| PUT | /api/results/{id} | Updates a previously captured result. Only the Organiser who owns the related event may update it. | Organiser | { finishTime, finishingPosition } | 200 OK – result updated<br>403 Forbidden – not the owning Organiser<br>404 Not Found – result does not exist |
+| GET | /api/results/my | Retrieves all of the logged-in Participant's own results. | Participant | None | 200 OK – list of the Participant's results |
+| GET | /api/events/{eventId}/results | Retrieves all results for a specific event. Viewable by the owning Organiser and any Participant enrolled in the event. | Any (logged in) | None | 200 OK – list of results for the event<br>403 Forbidden – not the owning Organiser or an enrolled Participant<br>404 Not Found – event does not exist |
