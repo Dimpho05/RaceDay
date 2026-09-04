@@ -28,3 +28,15 @@
 | POST | /api/events | Creates a new event. The logged-in Organiser is set as the event's owner. | Organiser | { name, description, eventDate, location, distanceKm, eventTypeId } | 201 Created – event created<br>400 Bad Request – validation failed<br>403 Forbidden – not an Organiser |
 | PUT | /api/events/{id} | Updates an existing event. Only the Organiser who created it may update it. | Organiser | { name, description, eventDate, location, distanceKm, eventTypeId } | 200 OK – event updated<br>403 Forbidden – not the owning Organiser<br>404 Not Found – event does not exist |
 | DELETE | /api/events/{id} | Deletes an event. Only the Organiser who created it may delete it. | Organiser | None | 200 OK / 204 No Content – event deleted<br>403 Forbidden – not the owning Organiser<br>404 Not Found – event does not exist |
+
+
+
+## Categories
+
+| HTTP Method | Route | Description | Role Required | Request Body | Expected Response |
+|---|---|---|---|---|---|
+| GET | /api/events/{eventId}/categories | Retrieves all categories defined for a specific event. | Any (logged in) | None | 200 OK – list of categories<br>404 Not Found – event does not exist |
+| GET | /api/categories/{id} | Retrieves details of a single category by its ID. | Any (logged in) | None | 200 OK – category details<br>404 Not Found – category does not exist |
+| POST | /api/events/{eventId}/categories | Creates a new category for a specific event. Only the Organiser who owns the event may add categories to it. | Organiser | { categoryName, minimumAge, maximumAge, categoryDistance } | 201 Created – category created<br>403 Forbidden – not the owning Organiser<br>404 Not Found – event does not exist |
+| PUT | /api/categories/{id} | Updates an existing category. Only the Organiser who owns the parent event may update it. | Organiser | { categoryName, minimumAge, maximumAge, categoryDistance } | 200 OK – category updated<br>403 Forbidden – not the owning Organiser<br>404 Not Found – category does not exist |
+| DELETE | /api/categories/{id} | Deletes a category. Only the Organiser who owns the parent event may delete it. | Organiser | None | 200 OK / 204 No Content – category deleted<br>403 Forbidden – not the owning Organiser<br>404 Not Found – category does not exist |
