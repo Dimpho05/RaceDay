@@ -40,3 +40,13 @@
 | POST | /api/events/{eventId}/categories | Creates a new category for a specific event. Only the Organiser who owns the event may add categories to it. | Organiser | { categoryName, minimumAge, maximumAge, categoryDistance } | 201 Created – category created<br>403 Forbidden – not the owning Organiser<br>404 Not Found – event does not exist |
 | PUT | /api/categories/{id} | Updates an existing category. Only the Organiser who owns the parent event may update it. | Organiser | { categoryName, minimumAge, maximumAge, categoryDistance } | 200 OK – category updated<br>403 Forbidden – not the owning Organiser<br>404 Not Found – category does not exist |
 | DELETE | /api/categories/{id} | Deletes a category. Only the Organiser who owns the parent event may delete it. | Organiser | None | 200 OK / 204 No Content – category deleted<br>403 Forbidden – not the owning Organiser<br>404 Not Found – category does not exist |
+
+
+## Event Enrolments
+
+| HTTP Method | Route | Description | Role Required | Request Body | Expected Response |
+|---|---|---|---|---|---|
+| POST | /api/enrolments | Enrols the logged-in Participant into an event by selecting a category. Records the link between Participant, Event, and Category. | Participant | { eventId, categoryId } | 201 Created – enrolment record created<br>400 Bad Request – category does not belong to event<br>403 Forbidden – not a Participant<br>404 Not Found – event or category does not exist<br>409 Conflict – already enrolled in this event |
+| GET | /api/enrolments/my | Retrieves all enrolments belonging to the logged-in Participant. | Participant | None | 200 OK – list of the Participant's enrolments |
+| GET | /api/events/{eventId}/enrolments | Retrieves all enrolments for a specific event. Only the Organiser who owns the event may view them. | Organiser | None | 200 OK – list of enrolments for the event<br>403 Forbidden – not the owning Organiser<br>404 Not Found – event does not exist |
+| DELETE | /api/enrolments/{id} | Cancels the logged-in Participant's own enrolment. | Participant | None | 200 OK / 204 No Content – enrolment cancelled<br>403 Forbidden – not the owning Participant<br>404 Not Found – enrolment does not exist |
