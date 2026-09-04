@@ -37,10 +37,11 @@ A GitHub Actions workflow (`.github/workflows/validate-docs.yml`) runs on every 
 
 **CI/CD Screenshot:**
 
-_[ screenshot ]_
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/cd649b4b-bbbd-4fac-9ca2-5954fbbf25b4" />
+
 
 ## Video Presentation
 
-**YouTube Link:** _[ link]_
+**YouTube Link:** https://youtu.be/fL06aN6lej0
 
 The video walks through the planning documents, ERD design decisions, endpoint plan choices, and demonstrates the SQL script running live in SSMS.
