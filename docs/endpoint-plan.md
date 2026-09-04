@@ -16,3 +16,15 @@
 |---|---|---|---|---|---|
 | GET | /api/profile | Retrieves the logged-in user's own profile details. | Any (logged in) | None | 200 OK – returns profile (firstName, lastName, email, role, phoneNumber)<br>401 Unauthorized – not logged in |
 | PUT | /api/profile | Updates the logged-in user's own profile information. | Any (logged in) | { firstName, lastName, phoneNumber } | 200 OK – updated profile returned<br>400 Bad Request – validation failed<br>401 Unauthorized – not logged in |
+
+
+
+## Events
+
+| HTTP Method | Route | Description | Role Required | Request Body | Expected Response |
+|---|---|---|---|---|---|
+| GET | /api/events | Retrieves a list of all events, viewable by any user. | Any (logged in) | None | 200 OK – list of events |
+| GET | /api/events/{id} | Retrieves details of a single event by its ID. | Any (logged in) | None | 200 OK – event details<br>404 Not Found – event does not exist |
+| POST | /api/events | Creates a new event. The logged-in Organiser is set as the event's owner. | Organiser | { name, description, eventDate, location, distanceKm, eventTypeId } | 201 Created – event created<br>400 Bad Request – validation failed<br>403 Forbidden – not an Organiser |
+| PUT | /api/events/{id} | Updates an existing event. Only the Organiser who created it may update it. | Organiser | { name, description, eventDate, location, distanceKm, eventTypeId } | 200 OK – event updated<br>403 Forbidden – not the owning Organiser<br>404 Not Found – event does not exist |
+| DELETE | /api/events/{id} | Deletes an event. Only the Organiser who created it may delete it. | Organiser | None | 200 OK / 204 No Content – event deleted<br>403 Forbidden – not the owning Organiser<br>404 Not Found – event does not exist |
