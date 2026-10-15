@@ -16,4 +16,60 @@ public class RaceDayDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Enrolment> Enrolments => Set<Enrolment>();
     public DbSet<Result> Results => Set<Result>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Events -> EventTypes and Events -> Users (the Organiser)
+        modelBuilder.Entity<Event>(entity =>
+        {
+            entity.HasOne<EventType>()
+                  .WithMany()
+                  .HasForeignKey(e => e.EventTypeID)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(e => e.OrganiserID)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Categories -> Events
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasOne<Event>()
+                  .WithMany()
+                  .HasForeignKey(c => c.EventID)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Enrolments -> Users (the Participant), Events and Categories
+        modelBuilder.Entity<Enrolment>(entity =>
+        {
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(e => e.ParticipantID)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<Event>()
+                  .WithMany()
+                  .HasForeignKey(e => e.EventID)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<Category>()
+                  .WithMany()
+                  .HasForeignKey(e => e.CategoryID)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Results -> Enrolments
+        modelBuilder.Entity<Result>(entity =>
+        {
+            entity.HasOne<Enrolment>()
+                  .WithMany()
+                  .HasForeignKey(r => r.EnrolmentID)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
 }
