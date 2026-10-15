@@ -71,5 +71,51 @@ public class RaceDayDbContext : DbContext
                   .HasForeignKey(r => r.EnrolmentID)
                   .OnDelete(DeleteBehavior.Restrict);
         });
+
+        // ---------- Unique constraints ----------
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<EventType>()
+            .HasIndex(t => t.TypeName)
+            .IsUnique();
+
+        // A participant can only enrol once per event
+        modelBuilder.Entity<Enrolment>()
+            .HasIndex(e => new { e.ParticipantID, e.EventID })
+            .IsUnique();
+
+        // One result per enrolment
+        modelBuilder.Entity<Result>()
+            .HasIndex(r => r.EnrolmentID)
+            .IsUnique();
+
+        // ---------- Check constraint ----------
+        modelBuilder.Entity<User>()
+            .ToTable(t => t.HasCheckConstraint(
+                "CK_Users_Role",
+                "[Role] IN ('Organiser', 'Participant')"));
+
+        // ---------- Default values ----------
+        modelBuilder.Entity<User>()
+            .Property(u => u.CreateAt)
+            .HasDefaultValueSql("GETDATE()");
+
+        modelBuilder.Entity<Event>()
+            .Property(e => e.CreateAt)
+            .HasDefaultValueSql("GETDATE()");
+
+        modelBuilder.Entity<Enrolment>()
+            .Property(e => e.EnrolmentDate)
+            .HasDefaultValueSql("GETDATE()");
+
+        modelBuilder.Entity<Enrolment>()
+            .Property(e => e.EnrolmentStatus)
+            .HasDefaultValue("Active");
+
+        modelBuilder.Entity<Result>()
+            .Property(r => r.ResultDate)
+            .HasDefaultValueSql("GETDATE()");
     }
 }
