@@ -137,4 +137,54 @@ public class CategoriesController : ControllerBase
 
         return CreatedAtAction(nameof(GetCategory), new { id = category.CategoryID }, response);
     }
+
+    /// <summary>
+    /// Updates a category. Only the Organiser who owns the parent event may update it.
+    /// </summary>
+    [HttpPut("categories/{id:int}")]
+    [SessionAuthorize("Organiser")]
+    [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateCategory(int id, [FromBody] CreateCategoryRequest request)
+    {
+        var category = await _context.Categories.FindAsync(id);
+        if (category == null)
+        {
+            return NotFound(new { message = "Category not found." });
+        }
+
+        // Ownership check goes through the parent event
+        var ev = await _context.Events.FindAsync(category.EventID);
+        if (ev == null || ev.OrganiserID != HttpContext.Session.GetUserId())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "You can only update categories of your own events." });
+        }
+
+        if (request.MinimumAge.HasValue && request.MaximumAge.HasValue
+            && request.MinimumAge > request.MaximumAge)
+        {
+            return BadRequest(new { message = "Minimum age cannot be greater than maximum age." });
+        }
+
+        category.CategoryName = request.CategoryName.Trim();
+        category.MinimumAge = request.MinimumAge;
+        category.MaximumAge = request.MaximumAge;
+        category.CategoryDistance = request.CategoryDistance;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new CategoryResponse
+        {
+            CategoryID = category.CategoryID,
+            EventID = category.EventID,
+            CategoryName = category.CategoryName,
+            MinimumAge = category.MinimumAge,
+            MaximumAge = category.MaximumAge,
+            CategoryDistance = category.CategoryDistance
+        });
+    }
 }
