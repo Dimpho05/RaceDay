@@ -186,4 +186,46 @@ public class EventsController : ControllerBase
             CreateAt = ev.CreateAt
         });
     }
+
+    /// <summary>
+    /// Deletes an event. Only the Organiser who created it may delete it, and only while nobody has enrolled.
+    /// </summary>
+    [HttpDelete("{id:int}")]
+    [SessionAuthorize("Organiser")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DeleteEvent(int id)
+    {
+        var ev = await _context.Events.FindAsync(id);
+        if (ev == null)
+        {
+            return NotFound(new { message = "Event not found." });
+        }
+
+        // Ownership check: only the Organiser who created the event may delete it
+        if (ev.OrganiserID != HttpContext.Session.GetUserId())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "You can only delete your own events." });
+        }
+
+        // Protect participants' entries: an event with enrolments cannot be deleted
+        var hasEnrolments = await _context.Enrolments.AnyAsync(e => e.EventID == id);
+        if (hasEnrolments)
+        {
+            return Conflict(new { message = "This event already has enrolments and cannot be deleted." });
+        }
+
+        // No enrolments, so remove the event's categories first, then the event itself
+        var categories = _context.Categories.Where(c => c.EventID == id);
+        _context.Categories.RemoveRange(categories);
+        _context.Events.Remove(ev);
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
