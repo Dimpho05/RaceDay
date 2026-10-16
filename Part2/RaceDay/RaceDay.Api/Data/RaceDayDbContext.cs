@@ -117,5 +117,11 @@ public class RaceDayDbContext : DbContext
         modelBuilder.Entity<Result>()
             .Property(r => r.ResultDate)
             .HasDefaultValueSql("GETDATE()");
+
+        // ---------- Seed data ----------
+        modelBuilder.Entity<EventType>().HasData(
+            new EventType { EventTypeID = 1, TypeName = "Run" },
+            new EventType { EventTypeID = 2, TypeName = "Walk" },
+            new EventType { EventTypeID = 3, TypeName = "Cycle" });
     }
 }
