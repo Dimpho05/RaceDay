@@ -61,4 +61,38 @@ public class AuthController : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, response);
     }
+
+    /// <summary>
+    /// Logs a user in and starts a session that stores their user ID and role.
+    /// </summary>
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var email = request.Email.Trim().ToLower();
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+        // Same message for "no such email" and "wrong password" so attackers
+        // can't discover which emails are registered
+        if (user == null || !_passwordService.Verify(request.Password, user.PasswordHash))
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        // The server remembers who this is for all later requests
+        HttpContext.Session.SetInt32(SessionKeys.UserId, user.UserID);
+        HttpContext.Session.SetString(SessionKeys.Role, user.Role);
+
+        return Ok(new UserResponse
+        {
+            UserID = user.UserID,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Role = user.Role,
+            PhoneNumber = user.PhoneNumber
+        });
+    }
 }
