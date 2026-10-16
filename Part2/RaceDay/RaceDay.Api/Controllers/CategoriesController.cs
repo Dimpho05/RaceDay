@@ -187,4 +187,42 @@ public class CategoriesController : ControllerBase
             CategoryDistance = category.CategoryDistance
         });
     }
+
+    /// <summary>
+    /// Deletes a category. Only the Organiser who owns the parent event may delete it, and only while nobody is enrolled in it.
+    /// </summary>
+    [HttpDelete("categories/{id:int}")]
+    [SessionAuthorize("Organiser")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DeleteCategory(int id)
+    {
+        var category = await _context.Categories.FindAsync(id);
+        if (category == null)
+        {
+            return NotFound(new { message = "Category not found." });
+        }
+
+        // Ownership check goes through the parent event
+        var ev = await _context.Events.FindAsync(category.EventID);
+        if (ev == null || ev.OrganiserID != HttpContext.Session.GetUserId())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "You can only delete categories of your own events." });
+        }
+
+        // Protect participants' entries: a category with enrolments cannot be deleted
+        if (await _context.Enrolments.AnyAsync(e => e.CategoryID == id))
+        {
+            return Conflict(new { message = "Participants have already enrolled in this category, so it cannot be deleted." });
+        }
+
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
