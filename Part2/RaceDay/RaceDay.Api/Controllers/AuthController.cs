@@ -95,4 +95,21 @@ public class AuthController : ControllerBase
             PhoneNumber = user.PhoneNumber
         });
     }
+
+    /// <summary>
+    /// Logs the current user out by clearing their session.
+    /// </summary>
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public IActionResult Logout()
+    {
+        if (HttpContext.Session.GetInt32(SessionKeys.UserId) == null)
+        {
+            return Unauthorized(new { message = "You are not logged in." });
+        }
+
+        HttpContext.Session.Clear();
+        return Ok(new { message = "Logged out successfully." });
+    }
 }
