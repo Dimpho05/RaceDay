@@ -131,4 +131,59 @@ public class EventsController : ControllerBase
 
         return CreatedAtAction(nameof(GetEvent), new { id = ev.EventID }, response);
     }
+
+    /// <summary>
+    /// Updates an existing event. Only the Organiser who created it may update it.
+    /// </summary>
+    [HttpPut("{id:int}")]
+    [SessionAuthorize("Organiser")]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateEvent(int id, [FromBody] CreateEventRequest request)
+    {
+        var ev = await _context.Events.FindAsync(id);
+        if (ev == null)
+        {
+            return NotFound(new { message = "Event not found." });
+        }
+
+        // Ownership check: only the Organiser who created the event may change it
+        if (ev.OrganiserID != HttpContext.Session.GetUserId())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "You can only update your own events." });
+        }
+
+        var eventType = await _context.EventTypes.FindAsync(request.EventTypeId);
+        if (eventType == null)
+        {
+            return BadRequest(new { message = "Event type does not exist. Use 1 (Run), 2 (Walk) or 3 (Cycle)." });
+        }
+
+        ev.EventName = request.Name.Trim();
+        ev.Description = request.Description;
+        ev.EventDate = request.EventDate!.Value;
+        ev.Location = request.Location.Trim();
+        ev.Distance = request.DistanceKm;
+        ev.EventTypeID = request.EventTypeId;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new EventResponse
+        {
+            EventID = ev.EventID,
+            EventName = ev.EventName,
+            Description = ev.Description,
+            EventDate = ev.EventDate,
+            Location = ev.Location,
+            Distance = ev.Distance,
+            EventTypeID = ev.EventTypeID,
+            EventTypeName = eventType.TypeName,
+            OrganiserID = ev.OrganiserID,
+            CreateAt = ev.CreateAt
+        });
+    }
 }
