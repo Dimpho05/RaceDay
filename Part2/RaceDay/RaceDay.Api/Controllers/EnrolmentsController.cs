@@ -117,4 +117,49 @@ public class EnrolmentsController : ControllerBase
 
         return Ok(enrolments);
     }
+
+    /// <summary>
+    /// Retrieves all enrolments for an event. Only the Organiser who owns the event may view them.
+    /// </summary>
+    [HttpGet("events/{eventId:int}/enrolments")]
+    [SessionAuthorize("Organiser")]
+    [ProducesResponseType(typeof(List<EventEnrolmentResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetEnrolmentsForEvent(int eventId)
+    {
+        var ev = await _context.Events.AsNoTracking().FirstOrDefaultAsync(e => e.EventID == eventId);
+        if (ev == null)
+        {
+            return NotFound(new { message = "Event not found." });
+        }
+
+        // Ownership check: only the Organiser who created the event may see its enrolments
+        if (ev.OrganiserID != HttpContext.Session.GetUserId())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "You can only view enrolments for your own events." });
+        }
+
+        var enrolments = await (
+            from en in _context.Enrolments.AsNoTracking()
+            join u in _context.Users on en.ParticipantID equals u.UserID
+            join c in _context.Categories on en.CategoryID equals c.CategoryID
+            where en.EventID == eventId
+            orderby en.EnrolmentDate
+            select new EventEnrolmentResponse
+            {
+                EnrolmentID = en.EnrolmentID,
+                ParticipantID = en.ParticipantID,
+                ParticipantName = u.FirstName + " " + u.LastName,
+                ParticipantEmail = u.Email,
+                CategoryID = en.CategoryID,
+                CategoryName = c.CategoryName,
+                EnrolmentDate = en.EnrolmentDate,
+                EnrolmentStatus = en.EnrolmentStatus
+            }).ToListAsync();
+
+        return Ok(enrolments);
+    }
 }
