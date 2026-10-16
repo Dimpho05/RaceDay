@@ -84,4 +84,37 @@ public class EnrolmentsController : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, response);
     }
+
+    /// <summary>
+    /// Retrieves all enrolments belonging to the logged-in Participant.
+    /// </summary>
+    [HttpGet("enrolments/my")]
+    [SessionAuthorize("Participant")]
+    [ProducesResponseType(typeof(List<EnrolmentResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetMyEnrolments()
+    {
+        var participantId = HttpContext.Session.GetUserId()!.Value;
+
+        var enrolments = await (
+            from en in _context.Enrolments.AsNoTracking()
+            join ev in _context.Events on en.EventID equals ev.EventID
+            join c in _context.Categories on en.CategoryID equals c.CategoryID
+            where en.ParticipantID == participantId
+            orderby ev.EventDate
+            select new EnrolmentResponse
+            {
+                EnrolmentID = en.EnrolmentID,
+                ParticipantID = en.ParticipantID,
+                EventID = en.EventID,
+                EventName = ev.EventName,
+                CategoryID = en.CategoryID,
+                CategoryName = c.CategoryName,
+                EnrolmentDate = en.EnrolmentDate,
+                EnrolmentStatus = en.EnrolmentStatus
+            }).ToListAsync();
+
+        return Ok(enrolments);
+    }
 }
