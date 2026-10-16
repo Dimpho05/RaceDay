@@ -70,10 +70,59 @@ public class ResultsController : ControllerBase
         _context.Results.Add(result);
         await _context.SaveChangesAsync();
 
+        var response = await BuildResponseAsync(result, enrolment, ev);
+        return StatusCode(StatusCodes.Status201Created, response);
+    }
+
+    /// <summary>
+    /// Corrects a recorded result. Only the Organiser who owns the event may update it.
+    /// </summary>
+    [HttpPut("results/{id:int}")]
+    [SessionAuthorize("Organiser")]
+    [ProducesResponseType(typeof(ResultResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateResult(int id, [FromBody] UpdateResultRequest request)
+    {
+        if (!TimeSpan.TryParse(request.FinishTime, CultureInfo.InvariantCulture, out var finishTime)
+            || finishTime <= TimeSpan.Zero)
+        {
+            return BadRequest(new { message = "Finish time must be a valid time such as 01:38:42." });
+        }
+
+        var result = await _context.Results.FindAsync(id);
+        if (result == null)
+        {
+            return NotFound(new { message = "Result not found." });
+        }
+
+        // Ownership check goes result -> enrolment -> event -> Organiser
+        var enrolment = await _context.Enrolments.FindAsync(result.EnrolmentID);
+        var ev = enrolment == null ? null : await _context.Events.FindAsync(enrolment.EventID);
+        if (enrolment == null || ev == null || ev.OrganiserID != HttpContext.Session.GetUserId())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "You can only update results for your own events." });
+        }
+
+        result.FinishTime = finishTime;
+        result.FinishingPosition = request.FinishingPosition;
+
+        await _context.SaveChangesAsync();
+
+        var response = await BuildResponseAsync(result, enrolment, ev);
+        return Ok(response);
+    }
+
+    // Builds the readable response (names instead of bare IDs) for a result
+    private async Task<ResultResponse> BuildResponseAsync(Result result, Enrolment enrolment, Event ev)
+    {
         var participant = await _context.Users.FindAsync(enrolment.ParticipantID);
         var category = await _context.Categories.FindAsync(enrolment.CategoryID);
 
-        var response = new ResultResponse
+        return new ResultResponse
         {
             ResultID = result.ResultID,
             EnrolmentID = result.EnrolmentID,
@@ -86,7 +135,5 @@ public class ResultsController : ControllerBase
             FinishingPosition = result.FinishingPosition,
             ResultDate = result.ResultDate
         };
-
-        return StatusCode(StatusCodes.Status201Created, response);
     }
 }
