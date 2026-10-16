@@ -4,6 +4,7 @@ using RaceDay.Api.Data;
 using RaceDay.Api.DTOs;
 using RaceDay.Api.Models;
 using RaceDay.Api.Services;
+using RaceDay.Api.Filters;
 
 namespace RaceDay.Api.Controllers;
 
@@ -62,6 +63,7 @@ public class AuthController : ControllerBase
         return StatusCode(StatusCodes.Status201Created, response);
     }
 
+
     /// <summary>
     /// Logs a user in and starts a session that stores their user ID and role.
     /// </summary>
@@ -100,15 +102,11 @@ public class AuthController : ControllerBase
     /// Logs the current user out by clearing their session.
     /// </summary>
     [HttpPost("logout")]
+    [SessionAuthorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public IActionResult Logout()
     {
-        if (HttpContext.Session.GetInt32(SessionKeys.UserId) == null)
-        {
-            return Unauthorized(new { message = "You are not logged in." });
-        }
-
         HttpContext.Session.Clear();
         return Ok(new { message = "Logged out successfully." });
     }
