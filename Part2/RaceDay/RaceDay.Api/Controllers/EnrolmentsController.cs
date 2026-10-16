@@ -162,4 +162,41 @@ public class EnrolmentsController : ControllerBase
 
         return Ok(enrolments);
     }
+
+    /// <summary>
+    /// Cancels the logged-in Participant's own enrolment. An enrolment that already has a result cannot be cancelled.
+    /// </summary>
+    [HttpDelete("enrolments/{id:int}")]
+    [SessionAuthorize("Participant")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CancelEnrolment(int id)
+    {
+        var enrolment = await _context.Enrolments.FindAsync(id);
+        if (enrolment == null)
+        {
+            return NotFound(new { message = "Enrolment not found." });
+        }
+
+        // Ownership check: a Participant may only cancel their own enrolment
+        if (enrolment.ParticipantID != HttpContext.Session.GetUserId())
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "You can only cancel your own enrolments." });
+        }
+
+        // A recorded result cannot be orphaned
+        if (await _context.Results.AnyAsync(r => r.EnrolmentID == id))
+        {
+            return Conflict(new { message = "A result has already been recorded, so this enrolment cannot be cancelled." });
+        }
+
+        _context.Enrolments.Remove(enrolment);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
