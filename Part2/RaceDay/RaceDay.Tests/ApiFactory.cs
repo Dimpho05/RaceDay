@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RaceDay.Api.Data;
+using RaceDay.Api.Services;
 
 namespace RaceDay.Tests;
 
 // Starts the real API in memory, but swaps SQL Server for an in-memory database
-// so the tests run anywhere (including GitHub Actions) with no setup.
+// and Azure Blob Storage for a fake, so the tests run anywhere (including
+// GitHub Actions) with no setup.
 public class ApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _dbName = "RaceDayTests-" + Guid.NewGuid();
@@ -28,6 +30,15 @@ public class ApiFactory : WebApplicationFactory<Program>
 
             services.AddDbContext<RaceDayDbContext>(options =>
                 options.UseInMemoryDatabase(_dbName));
+
+            var blobDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(IBlobStorageService));
+            if (blobDescriptor != null)
+            {
+                services.Remove(blobDescriptor);
+            }
+
+            services.AddSingleton<IBlobStorageService, FakeBlobStorageService>();
         });
     }
 

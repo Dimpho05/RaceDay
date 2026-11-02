@@ -37,6 +37,9 @@ builder.Services.AddDbContext<RaceDayDbContext>(options =>
 // Password hashing service
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 
+// Azure Blob Storage for banner and profile images (only the API talks to Azure)
+builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
+
 // Session support: the server remembers who is logged in between requests
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
