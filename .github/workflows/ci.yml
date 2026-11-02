@@ -1,0 +1,59 @@
+name: RaceDay CI
+
+# Runs on every push (any branch) and on pull requests.
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-structure:
+    name: Validate repository structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Part 1 documents (/docs)
+        run: |
+          test -d docs || { echo "ERROR: /docs folder is missing."; exit 1; }
+          ls docs/*.sql      >/dev/null 2>&1 || { echo "ERROR: SQL script missing in /docs."; exit 1; }
+          ls docs/*endpoint* >/dev/null 2>&1 || { echo "ERROR: Endpoint plan missing in /docs."; exit 1; }
+          find docs -maxdepth 1 \( -iname "*.png" -o -iname "*.pdf" \) | grep -q . || { echo "ERROR: ERD missing in /docs."; exit 1; }
+          echo "Part 1 documents found."
+
+      - name: Check Part 2 projects
+        run: |
+          test -f Part2/RaceDay/RaceDay.Api/RaceDay.Api.csproj     || { echo "ERROR: API project missing."; exit 1; }
+          test -f Part2/RaceDay/RaceDay.Api/Program.cs             || { echo "ERROR: Program.cs missing."; exit 1; }
+          test -d Part2/RaceDay/RaceDay.Api/Controllers            || { echo "ERROR: Controllers folder missing."; exit 1; }
+          test -d Part2/RaceDay/RaceDay.Api/Migrations             || { echo "ERROR: EF Core migrations missing."; exit 1; }
+          test -f Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj || { echo "ERROR: Test project missing."; exit 1; }
+          echo "Part 2 projects found."
+
+      - name: Check README
+        run: |
+          test -f README.md || { echo "ERROR: README.md missing from repository root."; exit 1; }
+          echo "README.md found."
+
+  build-and-test:
+    name: Build and run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # Building the test project also builds the API (it is a project reference).
+      - name: Restore
+        run: dotnet restore Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj
+
+      - name: Build
+        run: dotnet build Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj --no-restore --configuration Release
+
+      # Tests use an in-memory database, so no SQL Server is needed on the runner.
+      - name: Run unit tests
+        run: dotnet test Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj --no-build --configuration Release --verbosity normal
