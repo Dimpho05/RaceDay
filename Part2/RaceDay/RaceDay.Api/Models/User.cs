@@ -26,5 +26,9 @@ public class User
     [MaxLength(20)]
     public string? PhoneNumber { get; set; }
 
+    // URL of the profile picture stored in Azure Blob Storage (optional)
+    [MaxLength(500)]
+    public string? ProfilePictureUrl { get; set; }
+
     public DateTime CreateAt { get; set; } = DateTime.Now;
 }

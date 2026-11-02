@@ -23,6 +23,10 @@ public class Event
     [Column(TypeName = "decimal(6,2)")]
     public decimal Distance { get; set; }
 
+    // URL of the banner image stored in Azure Blob Storage (optional)
+    [MaxLength(500)]
+    public string? BannerUrl { get; set; }
+
     // Foreign key -> EventTypes.EventTypeID
     public int EventTypeID { get; set; }
 
