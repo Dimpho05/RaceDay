@@ -8,6 +8,7 @@ public class EventResponse
     public DateTime EventDate { get; set; }
     public string Location { get; set; } = string.Empty;
     public decimal Distance { get; set; }
+    public string? BannerUrl { get; set; }
     public int EventTypeID { get; set; }
     public string EventTypeName { get; set; } = string.Empty;
     public int OrganiserID { get; set; }

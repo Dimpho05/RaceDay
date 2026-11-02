@@ -57,7 +57,8 @@ public class AuthController : ControllerBase
             LastName = user.LastName,
             Email = user.Email,
             Role = user.Role,
-            PhoneNumber = user.PhoneNumber
+            PhoneNumber = user.PhoneNumber,
+            ProfilePictureUrl = user.ProfilePictureUrl
         };
 
         return StatusCode(StatusCodes.Status201Created, response);
@@ -94,7 +95,8 @@ public class AuthController : ControllerBase
             LastName = user.LastName,
             Email = user.Email,
             Role = user.Role,
-            PhoneNumber = user.PhoneNumber
+            PhoneNumber = user.PhoneNumber,
+            ProfilePictureUrl = user.ProfilePictureUrl
         });
     }
 

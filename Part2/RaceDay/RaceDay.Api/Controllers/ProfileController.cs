@@ -41,7 +41,8 @@ public class ProfileController : ControllerBase
             LastName = user.LastName,
             Email = user.Email,
             Role = user.Role,
-            PhoneNumber = user.PhoneNumber
+            PhoneNumber = user.PhoneNumber,
+            ProfilePictureUrl = user.ProfilePictureUrl
         });
     }
 
@@ -75,7 +76,8 @@ public class ProfileController : ControllerBase
             LastName = user.LastName,
             Email = user.Email,
             Role = user.Role,
-            PhoneNumber = user.PhoneNumber
+            PhoneNumber = user.PhoneNumber,
+            ProfilePictureUrl = user.ProfilePictureUrl
         });
     }
 }
