@@ -1,0 +1,63 @@
+﻿@model EventFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+<input type="hidden" asp-for="EventID" />
+<input type="hidden" asp-for="ExistingBannerUrl" />
+
+<div class="mb-3">
+    <label asp-for="Name" class="form-label"></label>
+    <input asp-for="Name" class="form-control" maxlength="100" />
+    <span asp-validation-for="Name" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Description" class="form-label"></label>
+    <textarea asp-for="Description" class="form-control" rows="4" maxlength="500"></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="EventDate" class="form-label"></label>
+        <input asp-for="EventDate" type="datetime-local" class="form-control" />
+        <span asp-validation-for="EventDate" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="Location" class="form-label"></label>
+        <input asp-for="Location" class="form-control" maxlength="150" />
+        <span asp-validation-for="Location" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="DistanceKm" class="form-label"></label>
+        <input asp-for="DistanceKm" type="number" step="0.01" min="0.01" max="1000" class="form-control" />
+        <span asp-validation-for="DistanceKm" class="text-danger"></span>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="EventTypeId" class="form-label"></label>
+        <select asp-for="EventTypeId" asp-items="Model.EventTypes" class="form-select">
+            <option value="">Choose a type...</option>
+        </select>
+        <span asp-validation-for="EventTypeId" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="mb-4">
+    <label asp-for="BannerFile" class="form-label">
+        @(string.IsNullOrEmpty(Model.ExistingBannerUrl) ? "Banner image (optional)" : "Replace banner image (optional)")
+    </label>
+
+    @if (!string.IsNullOrEmpty(Model.ExistingBannerUrl))
+    {
+        <div class="mb-2">
+            <img src="@Model.ExistingBannerUrl" alt="Current banner" class="banner-preview" />
+        </div>
+    }
+
+    <input asp-for="BannerFile" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+    <div class="form-text">JPG, PNG or WEBP, up to 5 MB.</div>
+    <span asp-validation-for="BannerFile" class="text-danger"></span>
+</div>

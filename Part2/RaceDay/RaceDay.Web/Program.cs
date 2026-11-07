@@ -1,5 +1,11 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using RaceDay.Web.Services;
+
+// Use one fixed culture so numbers and dates are read and shown the same way on every
+// machine (a South African PC and a Docker container would otherwise disagree on "10.5" vs "10,5")
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
