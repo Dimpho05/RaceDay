@@ -1,0 +1,49 @@
+﻿@using RaceDay.Web.Services
+@{
+    var role = Context.Session.GetRole();
+    var firstName = Context.Session.GetFirstName();
+    var current = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string Active(string controller) =>
+        string.Equals(current, controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<nav class="navbar navbar-expand-md navbar-dark rd-navbar">
+    <div class="container">
+        <a class="navbar-brand" asp-controller="Home" asp-action="Index">Race<span class="brand-accent">Day</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link @Active("Home")" asp-controller="Home" asp-action="Index">Events</a>
+                </li>
+                @* Organiser links are added here as those pages are built *@
+                @* Participant links are added here as those pages are built *@
+            </ul>
+            <ul class="navbar-nav ms-auto align-items-md-center">
+                @if (role == null)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @Active("Account")" asp-controller="Account" asp-action="Login">Log in</a>
+                    </li>
+                    <li class="nav-item ms-md-2">
+                        <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">Register</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <span class="rd-user-chip">@firstName<span class="rd-role-tag">@role</span></span>
+                    </li>
+                    <li class="nav-item">
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light btn-sm">Log out</button>
+                        </form>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="checker-strip"></div>

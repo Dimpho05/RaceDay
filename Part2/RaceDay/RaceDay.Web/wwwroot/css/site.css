@@ -1,22 +1,389 @@
-html {
-  font-size: 14px;
+/* ===== RaceDay theme ===== */
+:root {
+    --rd-ink: #0B1220;
+    --rd-ink-soft: #1B263B;
+    --rd-accent: #FF5A1F;
+    --rd-accent-dark: #E04A12;
+    --rd-accent-soft: #FFE9E0;
+    --rd-bg: #F4F5F7;
+    --rd-text: #1F2937;
+    --rd-muted: #6B7280;
+    --rd-border: #E5E7EB;
+    --bs-primary: #FF5A1F;
+    --bs-primary-rgb: 255, 90, 31;
+    --bs-link-color-rgb: 224, 74, 18;
+    --bs-link-hover-color-rgb: 184, 58, 12;
+    --bs-body-font-family: 'Barlow', 'Segoe UI', Roboto, Arial, sans-serif;
+    --bs-body-color: #1F2937;
 }
 
-@media (min-width: 768px) {
-  html {
+html {
     font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    background: var(--rd-bg);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
 }
+
+h1, h2, h3, h4, h5, .page-title, .navbar-brand {
+    font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+    font-weight: 700;
+    color: var(--rd-ink);
+}
+
+.page-title {
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    font-size: 2.2rem;
+    margin-bottom: .25rem;
+}
+
+.page-subtitle {
+    color: var(--rd-muted);
+    margin-bottom: 1.5rem;
+}
+
+.rd-main {
+    flex: 1 0 auto;
+    padding-top: 1.5rem;
+    padding-bottom: 2.5rem;
+}
+
+/* ----- Navigation ----- */
+.rd-navbar {
+    background: var(--rd-ink);
+    padding-top: .6rem;
+    padding-bottom: .6rem;
+}
+
+    .rd-navbar .navbar-brand {
+        color: #fff;
+        font-size: 1.8rem;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+
+.brand-accent {
+    color: var(--rd-accent);
+}
+
+.rd-navbar .nav-link {
+    color: rgba(255, 255, 255, .75);
+    font-weight: 500;
+    letter-spacing: .02em;
+}
+
+    .rd-navbar .nav-link:hover,
+    .rd-navbar .nav-link.active {
+        color: #fff;
+    }
+
+    .rd-navbar .nav-link.active {
+        box-shadow: inset 0 -3px 0 var(--rd-accent);
+    }
+
+.rd-user-chip {
+    color: rgba(255, 255, 255, .85);
+    font-weight: 500;
+    margin-right: .75rem;
+}
+
+.rd-role-tag {
+    display: inline-block;
+    margin-left: .35rem;
+    padding: .1rem .5rem;
+    border-radius: 999px;
+    background: var(--rd-accent);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* Chequered-flag strip under the navbar */
+.checker-strip {
+    height: 10px;
+    background: repeating-conic-gradient(var(--rd-ink) 0% 25%, #fff 0% 50%) 0 0 / 20px 20px;
+}
+
+/* ----- Buttons (plain rules so they work in every Bootstrap version) ----- */
+.btn {
+    font-weight: 600;
+    letter-spacing: .02em;
+    border-radius: .5rem;
+}
+
+.btn-primary,
+.btn-primary:visited {
+    color: #fff;
+    background-color: var(--rd-accent);
+    border-color: var(--rd-accent);
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        color: #fff;
+        background-color: var(--rd-accent-dark);
+        border-color: var(--rd-accent-dark);
+    }
+
+    .btn-primary:active,
+    .btn-primary.active {
+        color: #fff;
+        background-color: #C93F0A;
+        border-color: #C93F0A;
+    }
+
+    .btn-primary:disabled,
+    .btn-primary.disabled {
+        color: #fff;
+        background-color: var(--rd-accent);
+        border-color: var(--rd-accent);
+        opacity: .65;
+    }
+
+.btn-outline-primary {
+    color: var(--rd-accent-dark);
+    border-color: var(--rd-accent);
+    background-color: transparent;
+}
+
+    .btn-outline-primary:hover,
+    .btn-outline-primary:focus,
+    .btn-outline-primary:active {
+        color: #fff;
+        background-color: var(--rd-accent);
+        border-color: var(--rd-accent);
+    }
+
+    .btn:focus,
+    .btn-primary:focus,
+    .btn-outline-primary:focus {
+        box-shadow: 0 0 0 .2rem rgba(255, 90, 31, .35);
+    }
+
+/* ----- Forms ----- */
+.form-label {
+    font-weight: 600;
+    color: var(--rd-ink-soft);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--rd-accent);
+    box-shadow: 0 0 0 .2rem rgba(255, 90, 31, .2);
+}
+
+.form-check-input:checked {
+    background-color: var(--rd-accent);
+    border-color: var(--rd-accent);
+}
+
+/* ----- Cards and panels ----- */
+.rd-card {
+    background: #fff;
+    border: 1px solid var(--rd-border);
+    border-radius: .9rem;
+    box-shadow: 0 2px 8px rgba(11, 18, 32, .06);
+}
+
+.rd-card-body {
+    padding: 1.5rem;
+}
+
+.rd-card-hover {
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+    .rd-card-hover:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(11, 18, 32, .12);
+    }
+
+.event-card {
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+    .event-card .event-banner {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .event-card .event-card-body {
+        padding: 1.1rem 1.25rem 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+.event-banner-placeholder {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--rd-ink) 0%, var(--rd-accent) 130%);
+    color: #fff;
+    font-family: 'Barlow Condensed', Arial, sans-serif;
+    font-size: 2rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.event-meta {
+    color: var(--rd-muted);
+    font-size: .92rem;
+}
+
+.event-type-tag {
+    display: inline-block;
+    padding: .15rem .6rem;
+    border-radius: 999px;
+    background: var(--rd-accent-soft);
+    color: var(--rd-accent-dark);
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ----- Hero (home page) ----- */
+.hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--rd-ink) 0%, var(--rd-ink-soft) 60%, #3A1F14 100%);
+    color: #fff;
+    border-radius: 1rem;
+    padding: 4rem 2rem;
+}
+
+    .hero::after {
+        content: "";
+        position: absolute;
+        right: -60px;
+        top: -40px;
+        width: 340px;
+        height: 340px;
+        background: var(--rd-accent);
+        opacity: .2;
+        transform: skewX(-20deg);
+    }
+
+    .hero > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero h1 {
+        color: #fff;
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        text-transform: uppercase;
+        line-height: 1;
+        margin-bottom: 1rem;
+    }
+
+    .hero .accent {
+        color: var(--rd-accent);
+    }
+
+    .hero p {
+        color: rgba(255, 255, 255, .8);
+        font-size: 1.15rem;
+        max-width: 36rem;
+    }
+
+/* ----- Dashboard tiles ----- */
+.stat-tile {
+    padding: 1.25rem 1.5rem;
+    border-left: 5px solid var(--rd-accent);
+}
+
+.stat-number {
+    font-family: 'Barlow Condensed', Arial, sans-serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--rd-ink);
+}
+
+.stat-label {
+    color: var(--rd-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+/* ----- Tables ----- */
+.table-rd {
+    --bs-table-bg: transparent;
+    margin-bottom: 0;
+}
+
+    .table-rd thead th {
+        background: var(--rd-ink);
+        color: #fff;
+        font-family: 'Barlow Condensed', Arial, sans-serif;
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        border: 0;
+        white-space: nowrap;
+    }
+
+    .table-rd td {
+        vertical-align: middle;
+    }
+
+/* ----- Enrolment status badges (colour coded) ----- */
+.status-badge {
+    display: inline-block;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.status-confirmed {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.status-pending {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.status-cancelled {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.status-other {
+    background: #E5E7EB;
+    color: #374151;
+}
+
+/* ----- Footer ----- */
+.rd-footer {
+    background: var(--rd-ink);
+    color: rgba(255, 255, 255, .6);
+    padding: 1.25rem 0;
+    margin-top: auto;
+    font-size: .9rem;
+}
+
+    .rd-footer .brand-accent {
+        font-weight: 700;
+    }

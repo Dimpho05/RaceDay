@@ -1,8 +1,17 @@
+using Microsoft.AspNetCore.Mvc;
 using RaceDay.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+// No-store: browsers never keep private pages, so the Back button after logout shows nothing sensitive
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new ResponseCacheAttribute
+    {
+        NoStore = true,
+        Location = ResponseCacheLocation.None
+    });
+});
 
 // Lets services read the current user's MVC session
 builder.Services.AddHttpContextAccessor();
@@ -40,6 +49,9 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+// Friendly page for 404 and other error status codes
+app.UseStatusCodePagesWithReExecute("/Home/StatusCode", "?code={0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

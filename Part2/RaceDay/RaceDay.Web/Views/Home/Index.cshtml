@@ -5,17 +5,17 @@
     var name = Context.Session.GetFirstName();
 }
 
-<div class="py-5">
-    @if (role == null)
-    {
-        <h1 class="display-5">Welcome to RaceDay</h1>
-        <p class="lead">Find races, enter events and track your results.</p>
-        <a asp-controller="Account" asp-action="Register" class="btn btn-primary me-2">Create an account</a>
-        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">Log in</a>
-    }
-    else
-    {
-        <h1 class="display-5">Welcome back, @name</h1>
-        <p class="lead">You are logged in as @(role == "Organiser" ? "an Organiser" : "a Participant").</p>
-    }
-</div>
+@if (role == null)
+{
+    <section class="hero">
+        <h1>Find it.<br />Enter it.<br /><span class="accent">Finish it.</span></h1>
+        <p>Discover races near you, enter in seconds and keep every finish time in one place.</p>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg me-2">Create an account</a>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">Log in</a>
+    </section>
+}
+else
+{
+    <h1 class="page-title">Welcome back, @name</h1>
+    <p class="page-subtitle">You are logged in as @(role == "Organiser" ? "an Organiser" : "a Participant").</p>
+}
