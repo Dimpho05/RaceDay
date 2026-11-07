@@ -1,8 +1,21 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using RaceDay.Web.Services
+@{
+    ViewData["Title"] = "Home";
+    var role = Context.Session.GetRole();
+    var name = Context.Session.GetFirstName();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="py-5">
+    @if (role == null)
+    {
+        <h1 class="display-5">Welcome to RaceDay</h1>
+        <p class="lead">Find races, enter events and track your results.</p>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-primary me-2">Create an account</a>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">Log in</a>
+    }
+    else
+    {
+        <h1 class="display-5">Welcome back, @name</h1>
+        <p class="lead">You are logged in as @(role == "Organiser" ? "an Organiser" : "a Participant").</p>
+    }
 </div>
