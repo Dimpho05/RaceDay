@@ -1,0 +1,90 @@
+﻿@model CategoriesViewModel
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div>
+        <h1 class="page-title">Categories</h1>
+        <p class="page-subtitle mb-0">@Model.Event.EventName &middot; @Model.Event.EventDate.ToString("d MMM yyyy")</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-controller="ManageEvents" asp-action="Edit" asp-route-id="@Model.Event.EventID" class="btn btn-outline-primary btn-sm">Event details</a>
+        <a asp-controller="ManageEnrolments" asp-action="Index" asp-route-eventId="@Model.Event.EventID" class="btn btn-outline-primary btn-sm">Enrolments</a>
+        <a asp-controller="ManageResults" asp-action="Index" asp-route-eventId="@Model.Event.EventID" class="btn btn-outline-primary btn-sm">Results</a>
+        <a asp-controller="ManageEvents" asp-action="Index" class="btn btn-outline-secondary btn-sm">All events</a>
+    </div>
+</div>
+
+@if (ViewData["ErrorMessage"] is string loadError)
+{
+    <div class="alert alert-warning" role="alert">@loadError</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="rd-card">
+            <div class="rd-card-body">
+                <h2 class="h4 mb-3">Add a category</h2>
+                <form asp-action="Create" method="post" novalidate>
+                    <partial name="_CategoryForm" model="Model.Form" />
+                    <button type="submit" class="btn btn-primary">Add category</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="rd-card">
+            <div class="rd-card-body pb-2">
+                <h2 class="h4 mb-0">Categories for this event</h2>
+            </div>
+
+            @if (!Model.Categories.Any())
+            {
+                <div class="rd-card-body text-muted">
+                    No categories yet. Add your first one using the form.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-rd table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Ages</th>
+                                <th>Distance</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@category.CategoryName</td>
+                                    <td>@category.AgeRange</td>
+                                    <td>@category.DistanceText</td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-1">
+                                            <a asp-action="Edit" asp-route-id="@category.CategoryID" class="btn btn-outline-primary btn-sm">Edit</a>
+                                            <form asp-action="Delete" asp-route-id="@category.CategoryID" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this category?');">
+                                                <input type="hidden" name="eventId" value="@Model.Event.EventID" />
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

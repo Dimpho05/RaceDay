@@ -1,0 +1,33 @@
+﻿@model CategoryFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+<input type="hidden" asp-for="CategoryID" />
+<input type="hidden" asp-for="EventID" />
+
+<div class="mb-3">
+    <label asp-for="CategoryName" class="form-label"></label>
+    <input asp-for="CategoryName" class="form-control" maxlength="50" placeholder="e.g. Under 20 or 10 km Open" />
+    <span asp-validation-for="CategoryName" class="text-danger"></span>
+</div>
+
+<div class="row">
+    <div class="col-6 mb-3">
+        <label asp-for="MinimumAge" class="form-label"></label>
+        <input asp-for="MinimumAge" type="number" min="0" max="120" class="form-control" />
+        <span asp-validation-for="MinimumAge" class="text-danger"></span>
+    </div>
+    <div class="col-6 mb-3">
+        <label asp-for="MaximumAge" class="form-label"></label>
+        <input asp-for="MaximumAge" type="number" min="0" max="120" class="form-control" />
+        <span asp-validation-for="MaximumAge" class="text-danger"></span>
+    </div>
+</div>
+
+<div class="mb-2">
+    <label asp-for="CategoryDistance" class="form-label"></label>
+    <input asp-for="CategoryDistance" type="number" step="0.01" min="0.01" max="1000" class="form-control" />
+    <span asp-validation-for="CategoryDistance" class="text-danger"></span>
+</div>
+
+<div class="form-text mb-3">Leave the ages or the distance blank if they do not apply to this category.</div>

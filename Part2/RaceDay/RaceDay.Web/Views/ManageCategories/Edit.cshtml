@@ -1,0 +1,29 @@
+﻿@model CategoryFormViewModel
+@{
+    ViewData["Title"] = "Edit category";
+}
+
+<h1 class="page-title">Edit category</h1>
+<p class="page-subtitle">@Model.EventName</p>
+
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <div class="rd-card">
+            <div class="rd-card-body">
+                <form asp-action="Edit" asp-route-id="@Model.CategoryID" method="post" novalidate>
+                    <input type="hidden" asp-for="EventName" />
+                    <partial name="_CategoryForm" model="Model" />
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <a asp-action="Index" asp-route-eventId="@Model.EventID" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
