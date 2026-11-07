@@ -1,0 +1,118 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div>
+        <h1 class="page-title">Organiser dashboard</h1>
+        <p class="page-subtitle mb-0">A summary of the events you have created.</p>
+    </div>
+    <a asp-controller="ManageEvents" asp-action="Create" class="btn btn-primary">+ Create event</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="rd-card stat-tile">
+            <div class="stat-number">@Model.TotalEvents</div>
+            <div class="stat-label">Events created</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card stat-tile">
+            <div class="stat-number">@Model.UpcomingEvents</div>
+            <div class="stat-label">Upcoming events</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card stat-tile">
+            <div class="stat-number">@Model.TotalEnrolments</div>
+            <div class="stat-label">Total enrolments</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card stat-tile">
+            @if (Model.NextEvent != null)
+            {
+                <div class="stat-number">@Model.NextEvent.Event.EventDate.ToString("d MMM")</div>
+                <div class="stat-label text-truncate" title="@Model.NextEvent.Event.EventName">Next: @Model.NextEvent.Event.EventName</div>
+            }
+            else
+            {
+                <div class="stat-number">&mdash;</div>
+                <div class="stat-label">No upcoming event</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="rd-card">
+    <div class="rd-card-body pb-2">
+        <h2 class="h4 mb-0">Your events</h2>
+    </div>
+
+    @if (!Model.Events.Any())
+    {
+        <div class="rd-card-body text-center">
+            <p class="text-muted mb-3">You have not created any events yet.</p>
+            <a asp-controller="ManageEvents" asp-action="Create" class="btn btn-primary">Create your first event</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-rd table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Type</th>
+                        <th class="text-center">Enrolments</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Events)
+                    {
+                        <tr>
+                            <td class="fw-semibold">
+                                <a asp-controller="ManageEvents" asp-action="Edit" asp-route-id="@row.Event.EventID"
+                                   class="text-decoration-none">@row.Event.EventName</a>
+                            </td>
+                            <td>@row.Event.EventDate.ToString("ddd, d MMM yyyy")</td>
+                            <td>@row.Event.Location</td>
+                            <td><span class="event-type-tag">@row.Event.EventTypeName</span></td>
+                            <td class="text-center">
+                                @if (row.EnrolmentCount.HasValue)
+                                {
+                                    <a asp-controller="ManageEnrolments" asp-action="Index" asp-route-eventId="@row.Event.EventID"
+                                       class="fw-semibold text-decoration-none">@row.EnrolmentCount.Value</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">&ndash;</span>
+                                }
+                            </td>
+                            <td>
+                                @if (row.IsUpcoming)
+                                {
+                                    <span class="status-badge status-confirmed">Upcoming</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-other">Past</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

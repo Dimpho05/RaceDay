@@ -51,7 +51,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 // Friendly page for 404 and other error status codes
-app.UseStatusCodePagesWithReExecute("/Home/StatusCode", "?code={0}");
+app.UseStatusCodePagesWithReExecute("/Home/HttpStatus", "?code={0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using RaceDay.Web.Models;
+using RaceDay.Web.Services;
 
 namespace RaceDay.Web.Controllers;
 
@@ -8,6 +9,12 @@ public class HomeController : Controller
 {
     public IActionResult Index()
     {
+        // Organisers have their own home page: the dashboard
+        if (HttpContext.Session.GetRole() == "Organiser")
+        {
+            return RedirectToAction("Index", "Dashboard");
+        }
+
         return View();
     }
 
@@ -19,8 +26,8 @@ public class HomeController : Controller
     }
 
     // Shown for 404 and other status codes (see UseStatusCodePagesWithReExecute in Program.cs)
-    public IActionResult StatusCode(int code)
+    public IActionResult HttpStatus(int code)
     {
-        return View(code);
+        return View("StatusCode", code);
     }
 }

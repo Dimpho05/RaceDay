@@ -4,7 +4,7 @@ using RaceDay.Web.Services;
 
 namespace RaceDay.Web.Controllers;
 
-public class AccountController : Controller
+public class AccountController : AppControllerBase
 {
     private readonly IRaceDayApiClient _api;
 
@@ -18,7 +18,7 @@ public class AccountController : Controller
     {
         if (HttpContext.Session.IsLoggedIn())
         {
-            return RedirectToAction("Index", "Home");
+            return RedirectToUserHome();
         }
 
         return View(new LoginViewModel { ReturnUrl = returnUrl });
@@ -53,7 +53,7 @@ public class AccountController : Controller
             return LocalRedirect(model.ReturnUrl);
         }
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToUserHome();
     }
 
     [HttpGet]
@@ -61,7 +61,7 @@ public class AccountController : Controller
     {
         if (HttpContext.Session.IsLoggedIn())
         {
-            return RedirectToAction("Index", "Home");
+            return RedirectToUserHome();
         }
 
         return View(new RegisterViewModel());
@@ -102,7 +102,7 @@ public class AccountController : Controller
         if (loginResult.Success && loginResult.Data != null)
         {
             HttpContext.Session.SignIn(loginResult.Data);
-            return RedirectToAction("Index", "Home");
+            return RedirectToUserHome();
         }
 
         TempData["Success"] = "Your account was created. Please log in.";
