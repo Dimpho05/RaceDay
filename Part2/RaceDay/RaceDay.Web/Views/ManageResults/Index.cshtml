@@ -1,0 +1,134 @@
+﻿@model ResultsEntryViewModel
+@{
+    ViewData["Title"] = "Results";
+
+    string Ordinal(int n)
+    {
+        var rem100 = n % 100;
+        if (rem100 >= 11 && rem100 <= 13)
+        {
+            return n + "th";
+        }
+
+        return (n % 10) switch
+        {
+            1 => n + "st",
+            2 => n + "nd",
+            3 => n + "rd",
+            _ => n + "th"
+        };
+    }
+}
+
+<div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div>
+        <h1 class="page-title">Results</h1>
+        <p class="page-subtitle mb-0">@Model.Event.EventName &middot; @Model.Event.EventDate.ToString("d MMM yyyy")</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-controller="ManageEvents" asp-action="Edit" asp-route-id="@Model.Event.EventID" class="btn btn-outline-primary btn-sm">Event details</a>
+        <a asp-controller="ManageCategories" asp-action="Index" asp-route-eventId="@Model.Event.EventID" class="btn btn-outline-primary btn-sm">Categories</a>
+        <a asp-controller="ManageEnrolments" asp-action="Index" asp-route-eventId="@Model.Event.EventID" class="btn btn-outline-primary btn-sm">Enrolments</a>
+        <a asp-controller="ManageEvents" asp-action="Index" class="btn btn-outline-secondary btn-sm">All events</a>
+    </div>
+</div>
+
+@if (ViewData["ErrorMessage"] is string loadError)
+{
+    <div class="alert alert-warning" role="alert">@loadError</div>
+}
+
+@if (!Model.EventHasFinished)
+{
+    <div class="alert alert-warning" role="alert">
+        This event has not taken place yet. You can enter results once it has finished.
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="rd-card stat-tile">
+            <div class="stat-number">@Model.Rows.Count</div>
+            <div class="stat-label">Participants</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card stat-tile">
+            <div class="stat-number">@Model.ResultsRecorded</div>
+            <div class="stat-label">Results recorded</div>
+        </div>
+    </div>
+</div>
+
+<div class="rd-card">
+    <div class="rd-card-body pb-2">
+        <h2 class="h4 mb-1">Finish times and positions</h2>
+        <p class="text-muted mb-0">Enter the time as hours:minutes:seconds, for example 01:38:42. Saving a result publishes it to the participant.</p>
+    </div>
+
+    @if (!Model.Rows.Any())
+    {
+        <div class="rd-card-body text-muted">
+            No participants have enrolled in this event, so there are no results to enter.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-rd align-middle">
+                <thead>
+                    <tr>
+                        <th>Participant</th>
+                        <th>Category</th>
+                        <th>Recorded result</th>
+                        <th>Enter or update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@row.Enrolment.ParticipantName</td>
+                            <td>@row.Enrolment.CategoryName</td>
+                            <td>
+                                @if (row.Result != null)
+                                {
+                                    <span class="status-badge status-confirmed">@Ordinal(row.Result.FinishingPosition)</span>
+                                    <span class="ms-2">@row.Result.FinishTime</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No result yet</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="Save" method="post" class="d-flex flex-wrap align-items-center gap-2">
+                                    <input type="hidden" name="EventId" value="@Model.Event.EventID" />
+                                    <input type="hidden" name="EnrolmentId" value="@row.Enrolment.EnrolmentID" />
+                                    <input type="hidden" name="ResultId" value="@(row.Result?.ResultID ?? 0)" />
+
+                                    <input type="text" name="FinishTime" value="@row.Result?.FinishTime"
+                                           class="form-control form-control-sm" style="width: 7.5rem;"
+                                           placeholder="01:38:42" pattern="\d{1,2}:\d{2}:\d{2}"
+                                           title="Hours:minutes:seconds, for example 01:38:42"
+                                           aria-label="Finish time for @row.Enrolment.ParticipantName"
+                                           required disabled="@(!Model.EventHasFinished)" />
+
+                                    <input type="number" name="FinishingPosition" value="@row.Result?.FinishingPosition"
+                                           class="form-control form-control-sm" style="width: 6rem;"
+                                           placeholder="Position" min="1" max="100000"
+                                           aria-label="Finishing position for @row.Enrolment.ParticipantName"
+                                           required disabled="@(!Model.EventHasFinished)" />
+
+                                    <button type="submit" class="btn btn-primary btn-sm" disabled="@(!Model.EventHasFinished)">
+                                        @(row.Result == null ? "Save & publish" : "Update")
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
