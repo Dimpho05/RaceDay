@@ -30,6 +30,18 @@
     </div>
     <div class="col-6 col-lg-3">
         <div class="rd-card stat-tile">
+            <div class="stat-number">@Model.ConfirmedCount</div>
+            <div class="stat-label">Confirmed</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card stat-tile">
+            <div class="stat-number">@Model.PendingCount</div>
+            <div class="stat-label">Pending</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card stat-tile">
             <div class="stat-number">@Model.Categories.Count</div>
             <div class="stat-label">Categories in use</div>
         </div>
@@ -84,17 +96,58 @@
                         <th>Category</th>
                         <th>Enrolled on</th>
                         <th>Status</th>
+                        <th>Change status</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var enrolment in Model.Enrolments)
                     {
+                        var isConfirmed = string.Equals(enrolment.EnrolmentStatus, "Confirmed", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(enrolment.EnrolmentStatus, "Active", StringComparison.OrdinalIgnoreCase);
+                        var isPending = string.Equals(enrolment.EnrolmentStatus, "Pending", StringComparison.OrdinalIgnoreCase);
+                        var isCancelled = string.Equals(enrolment.EnrolmentStatus, "Cancelled", StringComparison.OrdinalIgnoreCase);
+
                         <tr>
                             <td class="fw-semibold">@enrolment.ParticipantName</td>
                             <td>@enrolment.ParticipantEmail</td>
                             <td>@enrolment.CategoryName</td>
                             <td>@enrolment.EnrolmentDate.ToString("d MMM yyyy")</td>
                             <td><partial name="_StatusBadge" model="enrolment.EnrolmentStatus" /></td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @if (!isConfirmed)
+                                    {
+                                        <form asp-action="SetStatus" method="post" class="d-inline">
+                                            <input type="hidden" name="enrolmentId" value="@enrolment.EnrolmentID" />
+                                            <input type="hidden" name="eventId" value="@Model.Event.EventID" />
+                                            <input type="hidden" name="categoryId" value="@Model.SelectedCategoryId" />
+                                            <input type="hidden" name="status" value="Confirmed" />
+                                            <button type="submit" class="btn btn-primary btn-sm">Confirm</button>
+                                        </form>
+                                    }
+                                    @if (!isPending)
+                                    {
+                                        <form asp-action="SetStatus" method="post" class="d-inline">
+                                            <input type="hidden" name="enrolmentId" value="@enrolment.EnrolmentID" />
+                                            <input type="hidden" name="eventId" value="@Model.Event.EventID" />
+                                            <input type="hidden" name="categoryId" value="@Model.SelectedCategoryId" />
+                                            <input type="hidden" name="status" value="Pending" />
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">Set to pending</button>
+                                        </form>
+                                    }
+                                    @if (!isCancelled)
+                                    {
+                                        <form asp-action="SetStatus" method="post" class="d-inline"
+                                              onsubmit="return confirm('Cancel this enrolment?');">
+                                            <input type="hidden" name="enrolmentId" value="@enrolment.EnrolmentID" />
+                                            <input type="hidden" name="eventId" value="@Model.Event.EventID" />
+                                            <input type="hidden" name="categoryId" value="@Model.SelectedCategoryId" />
+                                            <input type="hidden" name="status" value="Cancelled" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
                         </tr>
                     }
                 </tbody>

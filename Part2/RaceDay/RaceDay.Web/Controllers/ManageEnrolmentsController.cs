@@ -60,6 +60,9 @@ public class ManageEnrolmentsController : AppControllerBase
         {
             Event = eventResult.Data,
             TotalCount = all.Count,
+            PendingCount = all.Count(e => IsStatus(e, "Pending")),
+            // Older enrolments created before statuses existed are called "Active"; they count as confirmed
+            ConfirmedCount = all.Count(e => IsStatus(e, "Confirmed") || IsStatus(e, "Active")),
             SelectedCategoryId = categoryId,
             Categories = all
                 .GroupBy(e => new { e.CategoryID, e.CategoryName })
@@ -80,4 +83,43 @@ public class ManageEnrolmentsController : AppControllerBase
 
         return View(model);
     }
+
+    // Confirm, cancel or reset one enrolment
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetStatus(int enrolmentId, int eventId, string status, int? categoryId)
+    {
+        if (status != "Pending" && status != "Confirmed" && status != "Cancelled")
+        {
+            TempData["Error"] = "That status is not valid.";
+            return RedirectToAction(nameof(Index), new { eventId, categoryId });
+        }
+
+        var result = await _api.PutAsync($"api/enrolments/{enrolmentId}/status", new { status });
+
+        var expired = RedirectIfSessionExpired(result);
+        if (expired != null)
+        {
+            return expired;
+        }
+
+        if (result.Success)
+        {
+            TempData["Success"] = status switch
+            {
+                "Confirmed" => "The enrolment was confirmed.",
+                "Cancelled" => "The enrolment was cancelled.",
+                _ => "The enrolment was set back to pending."
+            };
+        }
+        else
+        {
+            TempData["Error"] = result.ErrorMessage;
+        }
+
+        return RedirectToAction(nameof(Index), new { eventId, categoryId });
+    }
+
+    private static bool IsStatus(EventEnrolmentDto enrolment, string status)
+        => string.Equals(enrolment.EnrolmentStatus, status, StringComparison.OrdinalIgnoreCase);
 }

@@ -19,6 +19,10 @@ public class EnrolmentsViewModel
     // Enrolments in the event before any filter is applied
     public int TotalCount { get; set; }
 
+    // Totals by status, also before any filter is applied
+    public int PendingCount { get; set; }
+    public int ConfirmedCount { get; set; }
+
     public List<CategoryCount> Categories { get; set; } = new();
 
     public int? SelectedCategoryId { get; set; }
