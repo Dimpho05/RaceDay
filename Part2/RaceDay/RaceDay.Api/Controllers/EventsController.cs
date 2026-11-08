@@ -21,15 +21,57 @@ public class EventsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all events, soonest first. Available to any logged-in user.
+    /// Retrieves events, soonest first. Available to any logged-in user.
+    /// Every filter is optional and they can be combined.
     /// </summary>
+    /// <param name="eventTypeId">Only events of this type (1 = Run, 2 = Walk, 3 = Cycle).</param>
+    /// <param name="search">Only events whose name or location contains this text.</param>
+    /// <param name="fromDate">Only events on or after this date.</param>
+    /// <param name="toDate">Only events on or before this date.</param>
+    /// <param name="upcomingOnly">When true, hides events dated before today.</param>
     [HttpGet]
     [ProducesResponseType(typeof(List<EventResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetEvents()
+    public async Task<IActionResult> GetEvents(
+        [FromQuery] int? eventTypeId,
+        [FromQuery] string? search,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate,
+        [FromQuery] bool upcomingOnly = false)
     {
+        var filtered = _context.Events.AsNoTracking().AsQueryable();
+
+        if (eventTypeId.HasValue)
+        {
+            filtered = filtered.Where(e => e.EventTypeID == eventTypeId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            filtered = filtered.Where(e => e.EventName.Contains(term) || e.Location.Contains(term));
+        }
+
+        if (upcomingOnly)
+        {
+            var today = DateTime.Today;
+            filtered = filtered.Where(e => e.EventDate >= today);
+        }
+
+        if (fromDate.HasValue)
+        {
+            var from = fromDate.Value.Date;
+            filtered = filtered.Where(e => e.EventDate >= from);
+        }
+
+        if (toDate.HasValue)
+        {
+            var until = toDate.Value.Date.AddDays(1);
+            filtered = filtered.Where(e => e.EventDate < until);
+        }
+
         var events = await (
-            from e in _context.Events.AsNoTracking()
+            from e in filtered
             join t in _context.EventTypes on e.EventTypeID equals t.EventTypeID
             orderby e.EventDate
             select new EventResponse

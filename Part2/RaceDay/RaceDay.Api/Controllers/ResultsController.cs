@@ -133,7 +133,16 @@ public class ResultsController : ControllerBase
             .OrderByDescending(x => x.Event.EventDate)
             .ToListAsync();
 
-        return Ok(rows.Select(ToResponse).ToList());
+        var finisherCounts = await CountFinishersAsync(rows.Select(x => x.Event.EventID).Distinct().ToList());
+
+        var myResults = rows.Select(x =>
+        {
+            var item = ToResponse(x);
+            item.TotalFinishers = finisherCounts.GetValueOrDefault(x.Event.EventID);
+            return item;
+        }).ToList();
+
+        return Ok(myResults);
     }
 
     /// <summary>
@@ -170,7 +179,13 @@ public class ResultsController : ControllerBase
             .OrderBy(x => x.Result.FinishingPosition)
             .ToListAsync();
 
-        return Ok(rows.Select(ToResponse).ToList());
+        var eventResults = rows.Select(ToResponse).ToList();
+        foreach (var item in eventResults)
+        {
+            item.TotalFinishers = rows.Count;
+        }
+
+        return Ok(eventResults);
     }
 
     // Joins a result to its enrolment, event, participant and category in one query
@@ -224,7 +239,20 @@ public class ResultsController : ControllerBase
             CategoryName = category?.CategoryName ?? string.Empty,
             FinishTime = result.FinishTime.ToString(@"hh\:mm\:ss"),
             FinishingPosition = result.FinishingPosition,
-            ResultDate = result.ResultDate
+            ResultDate = result.ResultDate,
+            TotalFinishers = (await CountFinishersAsync(new List<int> { ev.EventID })).GetValueOrDefault(ev.EventID)
         };
+    }
+
+    // For each event ID, how many enrolments have a recorded result
+    private async Task<Dictionary<int, int>> CountFinishersAsync(List<int> eventIds)
+    {
+        return await (
+            from r in _context.Results.AsNoTracking()
+            join en in _context.Enrolments on r.EnrolmentID equals en.EnrolmentID
+            where eventIds.Contains(en.EventID)
+            group r by en.EventID into g
+            select new { EventId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.EventId, x => x.Count);
     }
 }

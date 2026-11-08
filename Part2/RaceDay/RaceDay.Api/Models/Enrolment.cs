@@ -18,7 +18,7 @@ public class Enrolment
 
     public DateTime EnrolmentDate { get; set; } = DateTime.Now;
 
-    // "Active" by default; a cancelled enrolment can be marked instead of deleted
+    // "Pending" when a participant first enrols; the Organiser can mark it "Confirmed" or "Cancelled"
     [Required, MaxLength(20)]
-    public string EnrolmentStatus { get; set; } = "Active";
+    public string EnrolmentStatus { get; set; } = "Pending";
 }

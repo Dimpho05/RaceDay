@@ -112,7 +112,7 @@ public class RaceDayDbContext : DbContext
 
         modelBuilder.Entity<Enrolment>()
             .Property(e => e.EnrolmentStatus)
-            .HasDefaultValue("Active");
+            .HasDefaultValue("Pending");
 
         modelBuilder.Entity<Result>()
             .Property(r => r.ResultDate)

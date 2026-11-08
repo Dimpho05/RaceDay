@@ -75,7 +75,7 @@ namespace RaceDay.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Active");
+                        .HasDefaultValue("Pending");
 
                     b.Property<int>("EventID")
                         .HasColumnType("int");
