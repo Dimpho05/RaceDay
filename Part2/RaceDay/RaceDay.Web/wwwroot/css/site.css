@@ -448,3 +448,25 @@ h1, h2, h3, h4, h5, .page-title, .navbar-brand {
     color: var(--rd-ink);
     font-size: 1.1rem;
 }
+
+/* ----- Category choice on the event detail page ----- */
+.category-option {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .8rem 1rem;
+    margin-bottom: .6rem;
+    border: 1px solid var(--rd-border);
+    border-radius: .7rem;
+    cursor: pointer;
+    background: #fff;
+}
+
+    .category-option:hover {
+        border-color: var(--rd-accent);
+    }
+
+    .category-option:has(input:checked) {
+        border-color: var(--rd-accent);
+        background: var(--rd-accent-soft);
+    }

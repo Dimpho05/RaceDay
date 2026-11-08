@@ -1,0 +1,125 @@
+﻿@model MyEnrolmentsViewModel
+@{
+    ViewData["Title"] = "My enrolments";
+}
+
+<h1 class="page-title">My enrolments</h1>
+<p class="page-subtitle">Every event you have entered and where each entry stands.</p>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (Model.Total == 0 && string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="rd-card">
+        <div class="rd-card-body text-center">
+            <p class="text-muted mb-3">You have not entered any events yet.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Browse events</a>
+        </div>
+    </div>
+}
+
+@if (Model.Upcoming.Any())
+{
+    <h2 class="h4 mt-4 mb-3">Upcoming</h2>
+    <div class="rd-card mb-4">
+        <div class="table-responsive">
+            <table class="table table-rd table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Upcoming)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(row.Event?.BannerUrl))
+                                {
+                                    <img src="@row.Event!.BannerUrl" alt="" class="event-thumb" />
+                                }
+                                else
+                                {
+                                    <div class="event-thumb event-thumb-empty"></div>
+                                }
+                            </td>
+                            <td class="fw-semibold">
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@row.Enrolment.EventID"
+                                   class="text-decoration-none">@row.Enrolment.EventName</a>
+                            </td>
+                            <td>@(row.Event != null ? row.Event.EventDate.ToString("ddd, d MMM yyyy HH:mm") : "")</td>
+                            <td>@row.Event?.Location</td>
+                            <td>@row.Enrolment.CategoryName</td>
+                            <td><partial name="_StatusBadge" model="row.Enrolment.EnrolmentStatus" /></td>
+                            <td class="text-end">
+                                <form asp-action="Withdraw" asp-route-id="@row.Enrolment.EnrolmentID" method="post" class="d-inline"
+                                      onsubmit="return confirm('Withdraw from this event?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Withdraw</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.Past.Any())
+{
+    <h2 class="h4 mt-4 mb-3">Past events</h2>
+    <div class="rd-card mb-4">
+        <div class="table-responsive">
+            <table class="table table-rd table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Past)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(row.Event?.BannerUrl))
+                                {
+                                    <img src="@row.Event!.BannerUrl" alt="" class="event-thumb" />
+                                }
+                                else
+                                {
+                                    <div class="event-thumb event-thumb-empty"></div>
+                                }
+                            </td>
+                            <td class="fw-semibold">
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@row.Enrolment.EventID"
+                                   class="text-decoration-none">@row.Enrolment.EventName</a>
+                            </td>
+                            <td>@row.Event!.EventDate.ToString("ddd, d MMM yyyy HH:mm")</td>
+                            <td>@row.Event.Location</td>
+                            <td>@row.Enrolment.CategoryName</td>
+                            <td><partial name="_StatusBadge" model="row.Enrolment.EnrolmentStatus" /></td>
+                            <td class="text-end">
+                                <a asp-controller="MyResults" asp-action="Index" class="btn btn-outline-primary btn-sm">My results</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

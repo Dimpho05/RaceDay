@@ -74,41 +74,91 @@ else
     </div>
 
     <div class="col-lg-5">
-        <div class="rd-card">
-            <div class="rd-card-body pb-2">
-                <h2 class="h4 mb-0">Categories</h2>
-            </div>
 
-            @if (!Model.Categories.Any())
-            {
-                <div class="rd-card-body text-muted">
-                    The organiser has not added any categories yet.
+        @if (Model.MyEnrolment != null)
+        {
+            <div class="rd-card mb-4">
+                <div class="rd-card-body">
+                    <h2 class="h4">You are entered</h2>
+                    <p class="mb-2">Category: <strong>@Model.MyEnrolment.CategoryName</strong></p>
+                    <p class="mb-3">Status: <partial name="_StatusBadge" model="Model.MyEnrolment.EnrolmentStatus" /></p>
+                    <a asp-controller="MyEnrolments" asp-action="Index" class="btn btn-outline-primary btn-sm">View my enrolments</a>
                 </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-rd align-middle">
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Ages</th>
-                                <th>Distance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var category in Model.Categories)
-                            {
+            </div>
+        }
+        else if (Model.CanEnrol)
+        {
+            <div class="rd-card mb-4">
+                <div class="rd-card-body">
+                    <h2 class="h4">Enter this event</h2>
+                    <p class="text-muted">Choose the category you want to enter.</p>
+
+                    <form asp-controller="Events" asp-action="Enrol" method="post">
+                        <input type="hidden" name="eventId" value="@ev.EventID" />
+
+                        @foreach (var category in Model.Categories)
+                        {
+                            <label class="category-option">
+                                <input type="radio" name="categoryId" value="@category.CategoryID" class="form-check-input mt-1" required />
+                                <span>
+                                    <strong>@category.CategoryName</strong><br />
+                                    <small class="text-muted">@category.AgeRange &middot; @category.DistanceText</small>
+                                </span>
+                            </label>
+                        }
+
+                        <button type="submit" class="btn btn-primary w-100 mt-2">Enter event</button>
+                    </form>
+                </div>
+            </div>
+        }
+        else if (Model.IsParticipant && Model.HasFinished)
+        {
+            <div class="alert alert-secondary">This event has finished, so entries are closed.</div>
+        }
+        else if (Model.IsParticipant && !Model.Categories.Any())
+        {
+            <div class="alert alert-secondary">Entries are not open yet. The organiser has not added any categories.</div>
+        }
+
+        @if (Model.MyEnrolment != null || !Model.CanEnrol)
+        {
+            <div class="rd-card">
+                <div class="rd-card-body pb-2">
+                    <h2 class="h4 mb-0">Categories</h2>
+                </div>
+
+                @if (!Model.Categories.Any())
+                {
+                    <div class="rd-card-body text-muted">
+                        The organiser has not added any categories yet.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-rd align-middle">
+                            <thead>
                                 <tr>
-                                    <td class="fw-semibold">@category.CategoryName</td>
-                                    <td>@category.AgeRange</td>
-                                    <td>@category.DistanceText</td>
+                                    <th>Category</th>
+                                    <th>Ages</th>
+                                    <th>Distance</th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@category.CategoryName</td>
+                                        <td>@category.AgeRange</td>
+                                        <td>@category.DistanceText</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
     </div>
 </div>

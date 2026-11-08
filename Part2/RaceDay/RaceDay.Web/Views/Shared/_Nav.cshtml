@@ -30,7 +30,18 @@
                     <li class="nav-item">
                         <a class="nav-link @Active("Home", "Events")" asp-controller="Home" asp-action="Index">Events</a>
                     </li>
-                    @* Participant links (My enrolments, My results, Profile) are added as those pages are built *@
+                    @if (role == "Participant")
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @Active("MyEnrolments")" asp-controller="MyEnrolments" asp-action="Index">My enrolments</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Active("MyResults")" asp-controller="MyResults" asp-action="Index">My results</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Active("Profile")" asp-controller="Profile" asp-action="Index">Profile</a>
+                        </li>
+                    }
                 }
             </ul>
             <ul class="navbar-nav ms-auto align-items-md-center">

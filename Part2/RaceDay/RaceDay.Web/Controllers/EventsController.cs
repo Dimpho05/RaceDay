@@ -16,7 +16,7 @@ public class EventsController : AppControllerBase
         _api = api;
     }
 
-    // Full details of one event and the categories on offer
+    // Full details of one event, its categories and (for Participants) their enrolment
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
@@ -49,10 +49,62 @@ public class EventsController : AppControllerBase
             ViewData["ErrorMessage"] = categoriesResult.ErrorMessage;
         }
 
-        return View(new EventDetailsViewModel
+        var model = new EventDetailsViewModel
         {
             Event = eventResult.Data,
-            Categories = categoriesResult.Data ?? new List<CategoryDto>()
+            Categories = categoriesResult.Data ?? new List<CategoryDto>(),
+            IsParticipant = HttpContext.Session.GetRole() == "Participant"
+        };
+
+        // A Participant may already be entered in this event
+        if (model.IsParticipant)
+        {
+            var mine = await _api.GetAsync<List<EnrolmentDto>>("api/enrolments/my");
+
+            expired = RedirectIfSessionExpired(mine);
+            if (expired != null)
+            {
+                return expired;
+            }
+
+            model.MyEnrolment = mine.Data?.FirstOrDefault(e => e.EventID == id);
+        }
+
+        return View(model);
+    }
+
+    // Enter an event in the chosen category
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RoleAuthorize("Participant")]
+    public async Task<IActionResult> Enrol(int eventId, int? categoryId)
+    {
+        if (!categoryId.HasValue)
+        {
+            TempData["Error"] = "Please choose a category before entering the event.";
+            return RedirectToAction(nameof(Details), new { id = eventId });
+        }
+
+        var result = await _api.PostAsync<EnrolmentDto>("api/enrolments", new
+        {
+            eventId,
+            categoryId = categoryId.Value
         });
+
+        var expired = RedirectIfSessionExpired(result);
+        if (expired != null)
+        {
+            return expired;
+        }
+
+        if (!result.Success)
+        {
+            // For example: "You are already enrolled in this event."
+            TempData["Error"] = result.ErrorMessage;
+            return RedirectToAction(nameof(Details), new { id = eventId });
+        }
+
+        TempData["Success"] = "You are entered! Your enrolment is pending until the organiser confirms it.";
+        return RedirectToAction("Index", "MyEnrolments");
     }
 }
