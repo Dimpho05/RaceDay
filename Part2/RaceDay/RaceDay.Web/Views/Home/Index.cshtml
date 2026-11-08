@@ -1,6 +1,7 @@
-﻿@using RaceDay.Web.Services
+﻿@model HomeViewModel
+@using RaceDay.Web.Services
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Events";
     var role = Context.Session.GetRole();
     var name = Context.Session.GetFirstName();
 }
@@ -16,6 +17,95 @@
 }
 else
 {
-    <h1 class="page-title">Welcome back, @name</h1>
-    <p class="page-subtitle">You are logged in as @(role == "Organiser" ? "an Organiser" : "a Participant").</p>
+    <h1 class="page-title">Upcoming events</h1>
+    <p class="page-subtitle">Welcome back, @name. Find your next race.</p>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+    }
+
+    <div class="rd-card mb-4">
+        <div class="rd-card-body">
+            <form asp-controller="Home" asp-action="Index" method="get">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" id="search" name="search" value="@Model.Search" class="form-control"
+                               placeholder="Event name or location" />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="eventTypeId" class="form-label">Type</label>
+                        <select id="eventTypeId" name="eventTypeId" class="form-select">
+                            <option value="">All types</option>
+                            @foreach (var type in Model.EventTypes)
+                            {
+                                <option value="@type.EventTypeID" selected="@(Model.EventTypeId == type.EventTypeID)">@type.TypeName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="fromDate" class="form-label">From</label>
+                        <input type="date" id="fromDate" name="fromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+                    <div class="col-md-2">
+                        <label for="toDate" class="form-label">To</label>
+                        <input type="date" id="toDate" name="toDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+                    <div class="col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary" title="Clear filters">Reset</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Events.Any())
+    {
+        <div class="rd-card">
+            <div class="rd-card-body text-center">
+                @if (Model.HasFilters)
+                {
+                    <p class="text-muted mb-3">No upcoming events match your filters.</p>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Show all events</a>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">There are no upcoming events right now. Please check back soon.</p>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">@Model.Events.Count @(Model.Events.Count == 1 ? "event" : "events") found</p>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var ev in Model.Events)
+            {
+                <div class="col">
+                    <div class="rd-card rd-card-hover event-card">
+                        <a asp-controller="Events" asp-action="Details" asp-route-id="@ev.EventID" class="text-decoration-none">
+                            @if (!string.IsNullOrEmpty(ev.BannerUrl))
+                            {
+                                <img src="@ev.BannerUrl" alt="Banner for @ev.EventName" class="event-banner" />
+                            }
+                            else
+                            {
+                                <div class="event-banner-placeholder">@ev.EventTypeName</div>
+                            }
+                        </a>
+                        <div class="event-card-body">
+                            <div class="mb-2"><span class="event-type-tag">@ev.EventTypeName</span></div>
+                            <h2 class="h4 mb-1">@ev.EventName</h2>
+                            <div class="event-meta">@ev.EventDate.ToString("ddd, d MMM yyyy 'at' HH:mm")</div>
+                            <div class="event-meta mb-3">@ev.Location &middot; @ev.Distance.ToString("0.##") km</div>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@ev.EventID" class="btn btn-primary mt-auto">View details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 }

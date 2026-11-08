@@ -1,0 +1,114 @@
+﻿@model EventDetailsViewModel
+@{
+    ViewData["Title"] = Model.Event.EventName;
+    var ev = Model.Event;
+}
+
+<p class="mb-3"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">&larr; Back to events</a></p>
+
+@if (!string.IsNullOrEmpty(ev.BannerUrl))
+{
+    <img src="@ev.BannerUrl" alt="Banner for @ev.EventName" class="event-hero-banner mb-4" />
+}
+else
+{
+    <div class="event-hero-placeholder mb-4">@ev.EventTypeName</div>
+}
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+    <span class="event-type-tag">@ev.EventTypeName</span>
+    @if (Model.HasFinished)
+    {
+        <span class="status-badge status-other">Event finished</span>
+    }
+</div>
+<h1 class="page-title">@ev.EventName</h1>
+
+<div class="row g-3 my-3">
+    <div class="col-6 col-lg-3">
+        <div class="rd-card detail-fact">
+            <div class="detail-fact-label">Date</div>
+            <div class="detail-fact-value">@ev.EventDate.ToString("ddd, d MMM yyyy")</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card detail-fact">
+            <div class="detail-fact-label">Start time</div>
+            <div class="detail-fact-value">@ev.EventDate.ToString("HH:mm")</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card detail-fact">
+            <div class="detail-fact-label">Location</div>
+            <div class="detail-fact-value">@ev.Location</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="rd-card detail-fact">
+            <div class="detail-fact-label">Distance</div>
+            <div class="detail-fact-value">@ev.Distance.ToString("0.##") km</div>
+        </div>
+    </div>
+</div>
+
+@if (ViewData["ErrorMessage"] is string loadError)
+{
+    <div class="alert alert-warning" role="alert">@loadError</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="rd-card">
+            <div class="rd-card-body">
+                <h2 class="h4">About this event</h2>
+                @if (string.IsNullOrWhiteSpace(ev.Description))
+                {
+                    <p class="text-muted mb-0">The organiser has not added a description yet.</p>
+                }
+                else
+                {
+                    <p class="mb-0" style="white-space: pre-line;">@ev.Description</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="rd-card">
+            <div class="rd-card-body pb-2">
+                <h2 class="h4 mb-0">Categories</h2>
+            </div>
+
+            @if (!Model.Categories.Any())
+            {
+                <div class="rd-card-body text-muted">
+                    The organiser has not added any categories yet.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-rd align-middle">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Ages</th>
+                                <th>Distance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@category.CategoryName</td>
+                                    <td>@category.AgeRange</td>
+                                    <td>@category.DistanceText</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
