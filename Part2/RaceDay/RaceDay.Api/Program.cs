@@ -51,6 +51,34 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+// Create or update the database when the API starts. A brand-new database (for example the
+// one inside Docker) therefore gets its tables and seed data without any manual step.
+// The in-memory database used by the tests is not relational, so it is skipped.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<RaceDayDbContext>();
+
+    if (db.Database.IsRelational())
+    {
+        // SQL Server can take a few seconds to accept connections after it starts, so retry
+        var attempts = 0;
+        while (true)
+        {
+            try
+            {
+                db.Database.Migrate();
+                break;
+            }
+            catch (Exception ex) when (attempts < 10)
+            {
+                attempts++;
+                app.Logger.LogWarning(ex, "The database is not ready yet (attempt {Attempt} of 10). Retrying...", attempts);
+                Thread.Sleep(TimeSpan.FromSeconds(3));
+            }
+        }
+    }
+}
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
