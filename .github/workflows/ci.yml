@@ -21,22 +21,43 @@ jobs:
           find docs -maxdepth 1 \( -iname "*.png" -o -iname "*.pdf" \) | grep -q . || { echo "ERROR: ERD missing in /docs."; exit 1; }
           echo "Part 1 documents found."
 
-      - name: Check Part 2 projects
+      - name: Check Part 2 projects (API + tests)
         run: |
           test -f Part2/RaceDay/RaceDay.Api/RaceDay.Api.csproj     || { echo "ERROR: API project missing."; exit 1; }
-          test -f Part2/RaceDay/RaceDay.Api/Program.cs             || { echo "ERROR: Program.cs missing."; exit 1; }
-          test -d Part2/RaceDay/RaceDay.Api/Controllers            || { echo "ERROR: Controllers folder missing."; exit 1; }
+          test -f Part2/RaceDay/RaceDay.Api/Program.cs             || { echo "ERROR: API Program.cs missing."; exit 1; }
+          test -d Part2/RaceDay/RaceDay.Api/Controllers            || { echo "ERROR: API Controllers folder missing."; exit 1; }
           test -d Part2/RaceDay/RaceDay.Api/Migrations             || { echo "ERROR: EF Core migrations missing."; exit 1; }
           test -f Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj || { echo "ERROR: Test project missing."; exit 1; }
           echo "Part 2 projects found."
 
+      - name: Check Part 3 MVC project and Docker files
+        run: |
+          test -f Part2/RaceDay/RaceDay.Web/RaceDay.Web.csproj || { echo "ERROR: MVC project missing."; exit 1; }
+          test -f Part2/RaceDay/RaceDay.Web/Program.cs         || { echo "ERROR: MVC Program.cs missing."; exit 1; }
+          test -d Part2/RaceDay/RaceDay.Web/Controllers        || { echo "ERROR: MVC Controllers folder missing."; exit 1; }
+          test -d Part2/RaceDay/RaceDay.Web/Views              || { echo "ERROR: MVC Views folder missing."; exit 1; }
+          test -f Part2/RaceDay/RaceDay.Web/Dockerfile         || { echo "ERROR: MVC Dockerfile missing."; exit 1; }
+          test -f Part2/RaceDay/RaceDay.Api/Dockerfile         || { echo "ERROR: API Dockerfile missing."; exit 1; }
+          test -f docker-compose.yml                           || { echo "ERROR: docker-compose.yml missing."; exit 1; }
+          test -f .env.example                                 || { echo "ERROR: .env.example missing."; exit 1; }
+          echo "Part 3 projects and Docker files found."
+
+      - name: Check the MVC project has no direct database access
+        run: |
+          if grep -rIl --include="*.cs" --include="*.csproj" -E "EntityFrameworkCore|System\.Data\.SqlClient|Microsoft\.Data\.SqlClient|Azure\.Storage" Part2/RaceDay/RaceDay.Web --exclude-dir=bin --exclude-dir=obj | grep -q .; then
+            echo "ERROR: RaceDay.Web must not reference EF Core, SQL or Azure directly."
+            exit 1
+          fi
+          echo "MVC project only talks to the API."
+
       - name: Check README
         run: |
           test -f README.md || { echo "ERROR: README.md missing from repository root."; exit 1; }
-          echo "README.md found."
+          grep -qi "docker compose up" README.md || { echo "ERROR: README is missing the Docker run command."; exit 1; }
+          echo "README.md found and contains the Docker run command."
 
   build-and-test:
-    name: Build and run unit tests
+    name: Build API + MVC and run unit tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -47,13 +68,36 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Building the test project also builds the API (it is a project reference).
-      - name: Restore
-        run: dotnet restore Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj
+      - name: Restore API, MVC and tests
+        run: |
+          dotnet restore Part2/RaceDay/RaceDay.Api/RaceDay.Api.csproj
+          dotnet restore Part2/RaceDay/RaceDay.Web/RaceDay.Web.csproj
+          dotnet restore Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj
 
-      - name: Build
-        run: dotnet build Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj --no-restore --configuration Release
+      - name: Build API
+        run: dotnet build Part2/RaceDay/RaceDay.Api/RaceDay.Api.csproj --no-restore --configuration Release
+
+      - name: Build MVC web app
+        run: dotnet build Part2/RaceDay/RaceDay.Web/RaceDay.Web.csproj --no-restore --configuration Release
 
       # Tests use an in-memory database, so no SQL Server is needed on the runner.
       - name: Run unit tests
-        run: dotnet test Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj --no-build --configuration Release --verbosity normal
+        run: dotnet test Part2/RaceDay/RaceDay.Tests/RaceDay.Tests.csproj --no-restore --configuration Release --verbosity normal
+
+  docker-build:
+    name: Build Docker images (API + MVC)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Images are only built (not pushed) to prove the Dockerfiles work.
+      - name: Build MVC web image
+        run: docker build -f Part2/RaceDay/RaceDay.Web/Dockerfile -t raceday-web:ci Part2/RaceDay
+
+      - name: Build API image
+        run: docker build -f Part2/RaceDay/RaceDay.Api/Dockerfile -t raceday-api:ci Part2/RaceDay
