@@ -1,0 +1,92 @@
+﻿@model MyResultsViewModel
+@using RaceDay.Web.Services
+@{
+    ViewData["Title"] = "My results";
+}
+
+<h1 class="page-title">My results</h1>
+<p class="page-subtitle">Your race history across every event you have finished.</p>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (!Model.Rows.Any())
+{
+    @if (string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="rd-card">
+            <div class="rd-card-body text-center">
+                <p class="text-muted mb-1">You do not have any results yet.</p>
+                <p class="text-muted mb-3">Results appear here once an organiser records them for an event you entered.</p>
+                <a asp-controller="MyEnrolments" asp-action="Index" class="btn btn-primary">View my enrolments</a>
+            </div>
+        </div>
+    }
+}
+else
+{
+    var best = Model.BestFinish;
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="rd-card stat-tile">
+                <div class="stat-number">@Model.RacesCompleted</div>
+                <div class="stat-label">Races completed</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="rd-card stat-tile">
+                <div class="stat-number">@Model.Podiums</div>
+                <div class="stat-label">Podium finishes</div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="rd-card stat-tile">
+                @if (best != null)
+                {
+                    <div class="stat-number">@OrdinalFormatter.Format(best.Result.FinishingPosition)</div>
+                    <div class="stat-label text-truncate" title="@best.Result.EventName">Best finish: @best.Result.EventName</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="rd-card">
+        <div class="table-responsive">
+            <table class="table table-rd table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Finish time</th>
+                        <th>Position</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        <tr>
+                            <td class="fw-semibold">
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@row.Result.EventID"
+                                   class="text-decoration-none">@row.Result.EventName</a>
+                            </td>
+                            <td>@row.Date.ToString("d MMM yyyy")</td>
+                            <td>@row.Result.CategoryName</td>
+                            <td class="fw-semibold">@row.Result.FinishTime</td>
+                            <td>
+                                <span class="position-badge @(row.IsPodium ? "position-podium" : "")">@OrdinalFormatter.Format(row.Result.FinishingPosition)</span>
+                                @if (row.Result.TotalFinishers > 0)
+                                {
+                                    <span class="text-muted ms-1">of @row.Result.TotalFinishers finishers</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

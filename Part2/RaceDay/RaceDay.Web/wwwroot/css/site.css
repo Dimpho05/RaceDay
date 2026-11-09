@@ -470,3 +470,15 @@ h1, h2, h3, h4, h5, .page-title, .navbar-brand {
         border-color: var(--rd-accent);
         background: var(--rd-accent-soft);
     }
+
+/* ----- My results ----- */
+.position-badge {
+    font-family: 'Barlow Condensed', Arial, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--rd-ink);
+}
+
+.position-podium {
+    color: var(--rd-accent);
+}

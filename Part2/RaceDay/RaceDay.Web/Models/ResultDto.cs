@@ -15,5 +15,9 @@ public class ResultDto
     public string FinishTime { get; set; } = string.Empty;
 
     public int FinishingPosition { get; set; }
+
+    // How many participants have a recorded result in this event
+    public int TotalFinishers { get; set; }
+
     public DateTime ResultDate { get; set; }
 }
