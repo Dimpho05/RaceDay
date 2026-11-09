@@ -1,0 +1,9 @@
+# Keeps build output, editor files and tests out of the Docker build, so builds are faster and cleaner
+**/bin/
+**/obj/
+**/.vs/
+**/.git
+**/*.user
+**/Dockerfile*
+**/.dockerignore
+RaceDay.Tests/
